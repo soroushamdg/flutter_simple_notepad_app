@@ -29,41 +29,72 @@ class _HomeViewState extends State<HomeView> {
           title: Text('Notes'),
           backgroundColor: Color.fromRGBO(67, 99, 237, 1),
         ),
-        body: NotesList(),
+        body: NotesList(notes: notes),
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
-          onPressed: () {
-            showDialog(
+          onPressed: () async {
+            dynamic dialogData = await showDialog(
               context: context,
               builder: (BuildContext context) => EditViewDialog(
                 newForm: true,
                 editableNote: null,
               ),
             );
-            setState(() {});
+            if (dialogData != null) {
+              if (dialogData.isNotEmpty) {
+                if (dialogData['newNote']) {
+                  setState(() {
+                    notes.add(dialogData['note']);
+                  });
+                }
+              }
+            }
           },
         ));
   }
 }
 
-class NotesList extends StatelessWidget {
+class NotesList extends StatefulWidget {
   final List<Note> notes;
   NotesList({this.notes});
 
   @override
+  _NotesListState createState() => _NotesListState();
+}
+
+class _NotesListState extends State<NotesList> {
+  @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: (this.notes != null) ? notes.length : 0,
+      itemCount: (this.widget.notes != null) ? widget.notes.length : 0,
       itemBuilder: (context, index) {
+        index = widget.notes.length - index - 1;
         return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 5, vertical: 15),
+          padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
           child: Card(
             child: ListTile(
-              onTap: () {},
-              title: Text((notes[index].text.length <= 50)
-                  ? notes[index].text
-                  : notes[index].text.substring(0, 49)),
-              subtitle: Text(DateFormat.Hm().format(notes[index].date)),
+              onTap: () async {
+                dynamic dialogData = await showDialog(
+                  context: context,
+                  builder: (BuildContext context) => EditViewDialog(
+                    newForm: false,
+                    editableNote: widget.notes[index],
+                  ),
+                );
+                if (dialogData != null) {
+                  if (dialogData.isNotEmpty) {
+                    if (dialogData['newNote']) {
+                      setState(() {
+                        widget.notes[index] = dialogData['note'];
+                      });
+                    }
+                  }
+                }
+              },
+              title: Text((widget.notes[index].text.length <= 50)
+                  ? widget.notes[index].text
+                  : widget.notes[index].text.substring(0, 45) + '...'),
+              subtitle: Text(DateFormat.Hm().format(widget.notes[index].date)),
             ),
           ),
         );

@@ -10,7 +10,7 @@ class EditViewDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (newForm != false && editableNote != null) {
+    if (newForm == false && editableNote != null) {
       textController.text = editableNote.text;
     }
     return Dialog(
@@ -57,14 +57,16 @@ class EditViewDialog extends StatelessWidget {
               onPressed: () async {
                 if (textController.text.isNotEmpty) {
                   if (this.newForm == true) {
-                    //new note , add it to database
-                    await DatabaseProvider().insertNote(Note(
+                    Note theNote = Note(
                       id: await DatabaseProvider().queryRowCount() + 1,
                       date: DateTime.now(),
                       text: textController.text,
-                    ));
+                    );
+                    //new note , add it to database
+                    await DatabaseProvider().insertNote(theNote);
                     Navigator.pop(context, {
                       'newNote': true,
+                      'note': theNote,
                     });
                   } else {
                     //edit note and update database
@@ -72,6 +74,7 @@ class EditViewDialog extends StatelessWidget {
                     await DatabaseProvider().updateNote(editableNote);
                     Navigator.pop(context, {
                       'newNote': true,
+                      'note': editableNote,
                     });
                   }
                 } else {
